@@ -3,7 +3,7 @@ from test_utils import file_input
 
 
 @file_input("a", "b")
-def test_example2(testcase):
+def test_example(testcase):
     sample_data, expected_out = testcase
 
     result = solution(sample_data)
