@@ -21,7 +21,7 @@ def create_input_list_pair(file_data: str) -> tuple[list[int], list[int]]:
     return left, right
 
 
-def create_input_list_of_list(file_data: str):
+def create_input_list_of_list(file_data: str) -> list[list[int]]:
     lines = file_data.splitlines()
     result = list()
     for line in lines:

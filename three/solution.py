@@ -1,16 +1,33 @@
-from typing import Literal
+import re
 
 from .utils import input_multiline
 
-Sign = Literal[1, -1]
+pattern = re.compile(r"mul\((\d+),(\d+)\)", re.MULTILINE)
 
 
 def solution(input_value: str):
-    return ""
+    total = get_sum_of_commands(input_value)
+    return str(total)
+
+
+def get_sum_of_commands(input: str):
+    total = 0
+    for match in pattern.finditer(input):
+        left, right = match.groups()
+        total += int(left) * int(right)
+    return total
+
+
+do_filter = re.compile(r"do\(\)(.*?)(don't\(\)|$)", re.MULTILINE)
 
 
 def solution_two(input_value: str):
-    return ""
+    input_value = ("do()" + input_value).replace("\n", " ")
+    result = 0
+    for do_enabled_section in do_filter.finditer(input_value):
+        command_section, _ = do_enabled_section.groups()
+        result += get_sum_of_commands(command_section)
+    return str(result)
 
 
 if __name__ == "__main__":
