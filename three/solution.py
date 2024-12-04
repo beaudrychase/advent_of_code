@@ -18,14 +18,14 @@ def get_sum_of_commands(input: str):
     return total
 
 
-do_filter = re.compile(r"do\(\)(.*?)(don't\(\)|$)", re.MULTILINE)
+do_filter = re.compile(r"(do\(\)|^)(.*?)(don't\(\)|$)", re.MULTILINE)
 
 
 def solution_two(input_value: str):
-    input_value = ("do()" + input_value).replace("\n", " ")
+    input_value = input_value.replace("\n", " ")
     result = 0
     for do_enabled_section in do_filter.finditer(input_value):
-        command_section, _ = do_enabled_section.groups()
+        _, command_section, _ = do_enabled_section.groups()
         result += get_sum_of_commands(command_section)
     return str(result)
 
