@@ -1,20 +1,20 @@
-from test_utils import file_input
+from test_utils import part_1_cases, part_2_cases
 
 from .solution import solution, solution_two
 
 
-@file_input("first_easy", "first_hard")
-def test_example(testcase):
-    sample_data, expected_out = testcase
+@part_1_cases("b", "easy", "hard")
+def test_part_1(shared_testcase):
+    sample_data, expected_out = shared_testcase
 
     result = solution(sample_data)
 
     assert result == expected_out
 
 
-@file_input("second_easy", "second_hard")
-def test_example_2(testcase):
-    sample_data, expected_out = testcase
+@part_2_cases("easy", "hard")
+def test_part_2(shared_testcase):
+    sample_data, expected_out = shared_testcase
 
     result = solution_two(sample_data)
 
