@@ -3,7 +3,7 @@ from test_utils import part_1_cases, part_2_cases
 from .solution import solution, solution_two
 
 
-@part_1_cases("b", "easy", "hard")
+@part_1_cases("a", "b", "c", "easy", "hard")
 def test_part_1(shared_testcase):
     sample_data, expected_out = shared_testcase
 
@@ -12,7 +12,7 @@ def test_part_1(shared_testcase):
     assert result == expected_out
 
 
-@part_2_cases("b", "easy", "hard")
+@part_2_cases("easy", "hard")
 def test_part_2(shared_testcase):
     sample_data, expected_out = shared_testcase
 
