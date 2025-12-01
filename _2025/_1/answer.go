@@ -20,7 +20,7 @@ func makeDial() *Dial {
 func rotateDial(dial *Dial, command *Command) int {
 	clicks := 0
 	degrees := command.magnitude % DIAL_SIZE
-	if command.is_right_turn {
+	if command.isRightTurn {
 		clicks = (dial.position + command.magnitude) / DIAL_SIZE
 		dial.position += degrees
 	} else {
@@ -34,7 +34,7 @@ func rotateDial(dial *Dial, command *Command) int {
 
 
 type Command struct{
-	is_right_turn bool
+	isRightTurn bool
 	magnitude int
 }
 
@@ -46,7 +46,7 @@ func makeCommand(input string) *Command {
 
 func part_1() {
 	dial := makeDial()
-	count_of_zero_position := 0
+	countOfZeroPosition := 0
 	// test()
 	
 	file, err := os.Open("real.in")
@@ -59,12 +59,12 @@ func part_1() {
     for scanner.Scan() {
         command := makeCommand(scanner.Text())
 		rotateDial(dial, command)
-		is_zero_position := dial.position == 0
-		if is_zero_position {
-			count_of_zero_position = count_of_zero_position + 1
+		isZeroPosition := dial.position == 0
+		if isZeroPosition {
+			countOfZeroPosition = countOfZeroPosition + 1
 		}
     }
-	fmt.Printf("%v\n", count_of_zero_position)
+	fmt.Printf("%v\n", countOfZeroPosition)
 
     if err := scanner.Err(); err != nil {
         log.Fatal(err)
@@ -73,7 +73,7 @@ func part_1() {
 
 func part_2() {
 	dial := makeDial()
-	total_clicks := 0
+	totalClicks := 0
 	
 	file, err := os.Open("real.in")
     if err != nil {
@@ -85,9 +85,9 @@ func part_2() {
     for scanner.Scan() {
         command := makeCommand(scanner.Text())
 		clicks := rotateDial(dial, command)
-		total_clicks = total_clicks + clicks
+		totalClicks = totalClicks + clicks
     }
-	fmt.Printf("%v\n", total_clicks)
+	fmt.Printf("%v\n", totalClicks)
 
     if err := scanner.Err(); err != nil {
         log.Fatal(err)
