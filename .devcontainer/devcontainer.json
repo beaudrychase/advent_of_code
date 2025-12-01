@@ -39,6 +39,10 @@
                     "testing.pytestEnabled": true,
                     "python.analysis.diagnosticMode": "workspace"
                 },
+                "[go]": {
+                    "editor.formatOnSave": true,
+                    "editor.defaultFormatter": "golang.go"
+                },
                 "isort.args": [
                     "--profile",
                     "black"

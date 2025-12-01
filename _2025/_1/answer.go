@@ -7,10 +7,11 @@ import (
 	"os"
 	"strconv"
 )
+
 const DIAL_SIZE = 100
 const DIAL_STARTING_POSITION = 50
 
-type Dial struct{
+type Dial struct {
 	position int
 }
 
@@ -25,7 +26,8 @@ func rotateDial(dial *Dial, command *Command) int {
 		clicks = (dial.position + command.magnitude) / DIAL_SIZE
 		dial.position += degrees
 	} else {
-		clicks = (((DIAL_SIZE - dial.position) % DIAL_SIZE) + command.magnitude) / DIAL_SIZE
+		counterClockwisePosition := ((DIAL_SIZE - dial.position) % DIAL_SIZE)
+		clicks = (counterClockwisePosition + command.magnitude) / DIAL_SIZE
 		dial.position += DIAL_SIZE - degrees
 	}
 	dial.position = dial.position % DIAL_SIZE
@@ -33,10 +35,9 @@ func rotateDial(dial *Dial, command *Command) int {
 	return clicks
 }
 
-
-type Command struct{
+type Command struct {
 	isRightTurn bool
-	magnitude int
+	magnitude   int
 }
 
 func makeCommand(input string) *Command {
@@ -49,50 +50,50 @@ func part_1() {
 	dial := makeDial()
 	countOfZeroPosition := 0
 	// test()
-	
-	file, err := os.Open("real.in")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer file.Close()
 
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        command := makeCommand(scanner.Text())
+	file, err := os.Open("real.in")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		command := makeCommand(scanner.Text())
 		rotateDial(dial, command)
 		isZeroPosition := dial.position == 0
 		if isZeroPosition {
 			countOfZeroPosition = countOfZeroPosition + 1
 		}
-    }
+	}
 	fmt.Printf("%v\n", countOfZeroPosition)
 
-    if err := scanner.Err(); err != nil {
-        log.Fatal(err)
-    }
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func part_2() {
 	dial := makeDial()
 	totalClicks := 0
-	
-	file, err := os.Open("real.in")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer file.Close()
 
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        command := makeCommand(scanner.Text())
+	file, err := os.Open("real.in")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		command := makeCommand(scanner.Text())
 		clicks := rotateDial(dial, command)
 		totalClicks = totalClicks + clicks
-    }
+	}
 	fmt.Printf("%v\n", totalClicks)
 
-    if err := scanner.Err(); err != nil {
-        log.Fatal(err)
-    }
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
