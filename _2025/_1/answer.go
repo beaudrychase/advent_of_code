@@ -46,7 +46,7 @@ func makeCommand(input string) *Command {
 	return &Command{firstChar == "R", magnitude}
 }
 
-func part_1() {
+func part1() {
 	dial := makeDial()
 	countOfZeroPosition := 0
 	// test()
@@ -73,7 +73,7 @@ func part_1() {
 	}
 }
 
-func part_2() {
+func part2() {
 	dial := makeDial()
 	totalClicks := 0
 
@@ -97,6 +97,6 @@ func part_2() {
 }
 
 func main() {
-	part_1()
-	part_2()
+	part1()
+	part2()
 }
