@@ -5,17 +5,6 @@ from typing import NamedTuple
 from .utils import input_multiline
 
 
-class Pos(NamedTuple):
-    x: int
-    y: int
-
-    def get_adjacent_pos(self):
-        return {
-            Pos(self.x + c.x, self.y + c.y)
-            for c in {(Pos(0, 1)), Pos(0, -1), Pos(1, 0), Pos(-1, 0)}
-        }
-
-
 class Direction(Enum):
     UP = auto()
     LEFT = auto()
@@ -23,142 +12,169 @@ class Direction(Enum):
     RIGHT = auto()
 
 
-class Perimeter(NamedTuple):
-    pos: Pos
-    direction: Direction
+class Position(NamedTuple):
+    x: int
+    y: int
+
+    def get_orthogonal_positions(self):
+        return {
+            Position(self.x + c.x, self.y + c.y)
+            for c in {
+                Position(0, 1),
+                Position(0, -1),
+                Position(1, 0),
+                Position(-1, 0),
+            }
+        }
+
+
+class Fence(NamedTuple):
+    pos: Position
+    side: Direction
+
+    def get_side_adjacent_fences(self) -> set["Fence"]:
+        if self.side in {Direction.LEFT, Direction.RIGHT}:
+            return {
+                Fence(Position(self.pos.x, self.pos.y + 1), self.side),
+                Fence(Position(self.pos.x, self.pos.y - 1), self.side),
+            }
+        else:
+            return {
+                Fence(Position(self.pos.x + 1, self.pos.y), self.side),
+                Fence(Position(self.pos.x - 1, self.pos.y), self.side),
+            }
 
 
 @dataclass
-class Section:
-    positions: set[Pos]
-    perimeters: set[Perimeter]
+class Region:
+    plant: str
+    positions: set[Position]
+    fences: set[Fence]
+
+    def __init__(self, plant: str, positions: set[Position], perimeter: set[Position]):
+        self.plant = plant
+        self.positions = positions
+        self.fences = self._make_fences(positions, perimeter)
+
+    def _make_fences(
+        self, positions: set[Position], perimeter: set[Position]
+    ) -> set[Fence]:
+        fences: set[Fence] = set()
+        for s in positions:
+            fences.update(
+                {
+                    Fence(position, dir)
+                    for position, dir in {
+                        (Position(s.x + 1, s.y), Direction.RIGHT),
+                        (Position(s.x - 1, s.y), Direction.LEFT),
+                        (Position(s.x, s.y + 1), Direction.DOWN),
+                        (Position(s.x, s.y - 1), Direction.UP),
+                    }
+                    if position in perimeter
+                }
+            )
+        return fences
 
 
-class Plots:
-    plants: dict[Pos, str]
-    sections: list[Section]
+class Farm:
+    regions: list[Region]
+
+    _position_to_plant: dict[Position, str]
 
     def __init__(self, input: str):
         grid = [[c for c in line] for line in input.strip().splitlines()]
-        plants: dict[Pos, str] = dict()
+        plants: dict[Position, str] = dict()
         for y, row in enumerate(grid):
-            for x, c in enumerate(row):
-                plants[Pos(x, y)] = c
-        self.plants = plants
-        self.make_sections()
+            for x, plant_type in enumerate(row):
+                plants[Position(x, y)] = plant_type
 
-    def make_sections(self):
-        unassigned = set(self.plants)
+        self._position_to_plant = plants
+        self._make_regions()
 
-        def find_section(
-            section_plant: str, pos: Pos, section: set[Pos], perimeter: set[Pos]
-        ):
-            if pos in section:
-                return
-            if pos not in self.plants or self.plants[pos] != section_plant:
-                perimeter.add(pos)
-                return
-
-            unassigned.remove(pos)
-            section.add(pos)
-            for c in pos.get_adjacent_pos():
-                if c in self.plants:
-                    find_section(section_plant, c, section, perimeter)
-                else:
-                    perimeter.add(c)
-
-        sections: list[Section] = list()
+    def _make_regions(self):
+        regions: list[Region] = list()
+        unassigned: set[Position] = set(self._position_to_plant)
         while len(unassigned) > 0:
-            pos = unassigned.pop()
-            unassigned.add(pos)
-            section = set()
-            perimeter = set()
-            find_section(self.plants[pos], pos, section, perimeter)
-            res = self.make_perimeter_with_direction(section, perimeter)
-            sections.append(
-                Section(
-                    section,
-                    res,
-                )
-            )
-        self.sections = sections
+            position = unassigned.pop()
+            new_region = self._make_region(position)
+            regions.append(new_region)
+            unassigned = unassigned - new_region.positions
 
-    def make_perimeter_with_direction(self, positions: set[Pos], perimeters: set[Pos]):
-        res: set[Perimeter] = set()
-        for s in positions:
-            res.update(
-                {
-                    Perimeter(x, dir)
-                    for x, dir in {
-                        (Pos(s.x + 1, s.y), Direction.RIGHT),
-                        (Pos(s.x - 1, s.y), Direction.LEFT),
-                        (Pos(s.x, s.y + 1), Direction.DOWN),
-                        (Pos(s.x, s.y - 1), Direction.UP),
-                    }
-                    if x in perimeters
-                }
-            )
-        return res
+        self.regions = regions
+
+    def _make_region(
+        self,
+        region_root: Position,
+    ):
+        region_plant_type = self._position_to_plant[region_root]
+        region_positions: set[Position] = set()
+        perimeter: set[Position] = set()
+
+        region_edge: set[Position] = set([region_root])
+        while len(region_edge) > 0:
+            current_position = region_edge.pop()
+            region_positions.add(current_position)
+            for candidate in current_position.get_orthogonal_positions():
+                if candidate in region_positions:
+                    continue
+                elif (
+                    candidate in self._position_to_plant
+                    and self._position_to_plant[candidate] == region_plant_type
+                ):
+                    region_edge.add(candidate)
+                else:
+                    perimeter.add(candidate)
+
+        return Region(
+            region_plant_type,
+            region_positions,
+            perimeter,
+        )
 
 
 def solution(input_value: str):
-    plots = Plots(input_value)
+    farm = Farm(input_value)
 
-    total = sum(
-        (len(section.positions) * len(section.perimeters) for section in plots.sections)
-    )
+    total = sum((len(region.positions) * len(region.fences) for region in farm.regions))
     return str(total)
 
 
 def solution_two(input_value: str):
-    plots = Plots(input_value)
+    farm = Farm(input_value)
     total = 0
-    for section in plots.sections:
-        sides = get_sides(section.perimeters)
-        total += len(section.positions) * len(sides)
+    for region in farm.regions:
+        sides = get_sides(region.fences)
+        total += len(region.positions) * len(sides)
     return str(total)
 
 
-def get_sides(perimeter: set[Perimeter]) -> list[set[Perimeter]]:
-    sides: list[set[Perimeter]] = list()
-    unsided_perimeter: set[Perimeter] = set(perimeter)
+def get_sides(fence: set[Fence]) -> list[set[Fence]]:
+    sides: list[set[Fence]] = list()
+    unsided_fence: set[Fence] = set(fence)
 
-    while len(unsided_perimeter) > 0:
-        first = unsided_perimeter.pop()
-        unsided_perimeter.add(first)
-        side = make_side(unsided_perimeter, first)
-
+    while len(unsided_fence) > 0:
+        start_of_side = unsided_fence.pop()
+        side = make_side(unsided_fence, start_of_side)
+        unsided_fence = unsided_fence - side
         sides.append(side)
+
     return sides
 
 
-def make_side(unsided_perimeter: set[Perimeter], perimeter: Perimeter):
-    side = set()
-    side_edge = set([perimeter])
+def make_side(unsided_fence: set[Fence], start_of_side: Fence) -> set[Fence]:
+    side: set[Fence] = set()
+    side_edge = set([start_of_side])
     while len(side_edge) > 0:
-        cur = side_edge.pop()
-        unsided_perimeter.remove(cur)
-        side.add(cur)
-        unallocated_and_shares_side = {
-            x for x in get_adjacent_side_perimeters(cur) if x in unsided_perimeter
+        current = side_edge.pop()
+        side.add(current)
+        new_edge_fences = {
+            adjacent_fence
+            for adjacent_fence in current.get_side_adjacent_fences()
+            if adjacent_fence in unsided_fence and adjacent_fence not in side
         }
 
-        side_edge.update(unallocated_and_shares_side)
+        side_edge.update(new_edge_fences)
     return side
-
-
-def get_adjacent_side_perimeters(perimeter: Perimeter):
-    if perimeter.direction in {Direction.LEFT, Direction.RIGHT}:
-        return {
-            Perimeter(Pos(perimeter.pos.x, perimeter.pos.y + 1), perimeter.direction),
-            Perimeter(Pos(perimeter.pos.x, perimeter.pos.y - 1), perimeter.direction),
-        }
-
-    else:
-        return {
-            Perimeter(Pos(perimeter.pos.x + 1, perimeter.pos.y), perimeter.direction),
-            Perimeter(Pos(perimeter.pos.x - 1, perimeter.pos.y), perimeter.direction),
-        }
 
 
 if __name__ == "__main__":
