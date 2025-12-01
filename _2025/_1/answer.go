@@ -8,13 +8,14 @@ import (
 	"strconv"
 )
 const DIAL_SIZE = 100
+const DIAL_STARTING_POSITION = 50
 
 type Dial struct{
 	position int
 }
 
 func makeDial() *Dial {
-	return &Dial{50}
+	return &Dial{DIAL_STARTING_POSITION}
 }
 
 func rotateDial(dial *Dial, command *Command) int {
