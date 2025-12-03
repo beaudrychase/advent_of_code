@@ -50,7 +50,7 @@ func Test_isNumberRepeatedTwice4(t *testing.T) {
 
 	got := isNumberRepeatedTwice(121212)
 
-	want := true
+	want := false
 	if got != want {
 		t.Errorf("got %t, wanted %t", got, want)
 	}
@@ -103,7 +103,7 @@ func Test_Real_1(t *testing.T) {
 
 	got := part1(input)
 
-	want := read_string_from_file("real.2.out")
+	want := read_string_from_file("real.1.out")
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
 	}

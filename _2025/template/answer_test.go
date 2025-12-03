@@ -43,7 +43,7 @@ func Test_Real_1(t *testing.T) {
 
 	got := part1(input)
 
-	want := read_string_from_file("real.2.out")
+	want := read_string_from_file("real.1.out")
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
 	}
