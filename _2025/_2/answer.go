@@ -27,7 +27,7 @@ func parseInput(input string) []Range {
 func isNumberRepeatedTwice(id int) bool {
 	converted_id := strconv.Itoa(id)
 	split_size := len(converted_id) / 2
-	if len(converted_id) == 1 || len(converted_id)%split_size == 0 {
+	if len(converted_id) != 1 || len(converted_id)%split_size == 0 {
 		if converted_id[:split_size] == converted_id[split_size:] {
 			return true
 		}
